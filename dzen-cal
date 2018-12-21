@@ -1,20 +1,79 @@
 #!/usr/bin/env bash
-#
-# Modified by gavsiu
-# Based on dzen-cal
-# @link https://github.com/SIDSSIDS/dzen-cal
+
+function repeatAnnually() {
+  repeatMonth=$(printf %02d $1)
+  repeatDay=$(printf %02d $2)
+  currentYear=`date +%Y`
+  repeatYearsBefore=$3
+  repeatYearsAfter=$4
+
+  new_days=()
+
+  # Current year date
+  new_days+=("$currentYear-$repeatMonth-$repeatDay")
+
+  # Previous years dates
+  for ((n=0; n < repeatYearsBefore; n++))
+  do
+    currentYear=$(($currentYear-1))
+
+    new_days+=("$currentYear-$repeatMonth-$repeatDay")
+  done
+
+  # Reset year to current after repeatYearsBefore loop
+  currentYear=$(($currentYear+$repeatYearsBefore))
+
+  # Next years dates
+  for ((n=0; n < repeatYearsAfter; n++))
+  do
+    currentYear=$(($currentYear+1))
+
+    new_days+=("$currentYear-$repeatMonth-$repeatDay")
+  done
+}
+
+function repeat_highlighted_days() {
+  # Number of years before to include
+  repeatYearsBefore=1
+  # Number of years after to include
+  repeatYearsAfter=3
+
+  repeatAnnually $1 $2 $repeatYearsBefore $repeatYearsAfter
+  highlighted_days=("${highlighted_days[@]}" "${new_days[@]}")
+}
+
+function repeat_holidays() {
+  # Number of years before to include
+  repeatYearsBefore=0
+  # Number of years after to include
+  repeatYearsAfter=3
+
+  repeatAnnually $1 $2 $repeatYearsBefore $repeatYearsAfter
+  holidays=("${holidays[@]}" "${new_days[@]}")
+}
 
 highlighted_days=(
-  # Birthdays
-  "2018-02-01"
-  # Aniversaries
-  "2018-03-01"
 )
 
+# Birthdays
+repeat_highlighted_days 5 4
+
 holidays=(
-  # New Year's Day
-  "2018-01-01"
+  # Good Friday
+  "2018-03-30"
+  "2019-04-19"
+  "2020-04-10"
+  "2021-04-02"
 )
+
+# New Year's Day
+repeat_holidays 1 1
+# Rememberance Day
+repeat_holidays 11 11
+# Christmas Day
+repeat_holidays 12 25
+# Boxing Day
+repeat_holidays 12 26
 
 declare -a aligns=( "tl" "tm" "tr"
                     "ml" "mm" "mr"
